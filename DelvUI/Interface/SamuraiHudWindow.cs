@@ -1,9 +1,16 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Numerics;
-using Dalamud.Game.ClientState.Actors.Types;
-using Dalamud.Game.ClientState.Structs.JobGauge;
+using Dalamud.Data;
+using Dalamud.Game;
+using Dalamud.Game.ClientState;
+using Dalamud.Game.ClientState.JobGauge;
+using Dalamud.Game.ClientState.JobGauge.Types;
+using Dalamud.Game.ClientState.Objects;
+using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Game.Gui;
 using Dalamud.Plugin;
 using ImGuiNET;
 
@@ -13,79 +20,114 @@ namespace DelvUI.Interface
     {
 
         public override uint JobId => 34;
-        private int SamHiganbanaBarX => PluginConfiguration.SamHiganbanaBarX;
-        private int SamHiganbanaBarY => PluginConfiguration.SamHiganbanaBarY;
-        private int SamHiganbanaBarHeight => PluginConfiguration.SamHiganbanaBarHeight;
-        private int SamHiganbanaBarWidth => PluginConfiguration.SamHiganbanaBarWidth;
-        private int SamBuffsBarX => PluginConfiguration.SamBuffsBarX;
-        private int SamBuffsBarY => PluginConfiguration.SamBuffsBarY;
+        
         private int SamBuffsBarHeight => PluginConfiguration.SamBuffsBarHeight;
         private int SamBuffsBarWidth => PluginConfiguration.SamBuffsBarWidth;
-        private int SamTimeShifuXOffset => PluginConfiguration.SamTimeShifuXOffset;
-        private int SamTimeShifuYOffset => PluginConfiguration.SamTimeShifuYOffset;
-        private int SamTimeJinpuXOffset => PluginConfiguration.SamTimeJinpuXOffset;
-        private int SamTimeJinpuYOffset => PluginConfiguration.SamTimeJinpuYOffset;
-        private int SamSenBarHeight => PluginConfiguration.SamSenBarHeight;
-        private int SamSenBarWidth => PluginConfiguration.SamSenBarWidth;
-        private int SamSenBarX => PluginConfiguration.SamSenBarX;
-        private int SamSenBarY => PluginConfiguration.SamSenBarY;
-        private int SamMeditationBarHeight => PluginConfiguration.SamMeditationBarHeight;
-        private int SamMeditationBarWidth => PluginConfiguration.SamMeditationBarWidth;
-        private int SamMeditationBarX => PluginConfiguration.SamMeditationBarX;
-        private int SamMeditationBarY => PluginConfiguration.SamMeditationBarY;
+        private int SamBuffsBarX => PluginConfiguration.SamBuffsBarX;
+        private int SamBuffsBarY => PluginConfiguration.SamBuffsBarY;
+        
+        private int SamHiganbanaBarHeight => PluginConfiguration.SamHiganbanaBarHeight;
+        private int SamHiganbanaBarWidth => PluginConfiguration.SamHiganbanaBarWidth;
+        private int SamHiganbanaBarX => PluginConfiguration.SamHiganbanaBarX;
+        private int SamHiganbanaBarY => PluginConfiguration.SamHiganbanaBarY;
+        
         private int SamKenkiBarHeight => PluginConfiguration.SamKenkiBarHeight;
         private int SamKenkiBarWidth => PluginConfiguration.SamKenkiBarWidth;
         private int SamKenkiBarX => PluginConfiguration.SamKenkiBarX;
         private int SamKenkiBarY => PluginConfiguration.SamKenkiBarY;
-        private bool GaugeEnabled => PluginConfiguration.SAMGaugeEnabled;
-        private bool SenEnabled => PluginConfiguration.SAMSenEnabled;
-        protected int SenPadding => PluginConfiguration.SAMSenPadding;
-        private bool MeditationEnabled => PluginConfiguration.SAMMeditationEnabled;
-        protected int MeditationPadding => PluginConfiguration.SAMMeditationPadding;
-        protected int BuffsPadding => PluginConfiguration.SAMBuffsPadding;
+        
+        private int SamMeditationBarHeight => PluginConfiguration.SamMeditationBarHeight;
+        private int SamMeditationBarWidth => PluginConfiguration.SamMeditationBarWidth;
+        private int SamMeditationBarX => PluginConfiguration.SamMeditationBarX;
+        private int SamMeditationBarY => PluginConfiguration.SamMeditationBarY;
+        
+        private int SamSenBarHeight => PluginConfiguration.SamSenBarHeight;
+        private int SamSenBarWidth => PluginConfiguration.SamSenBarWidth;
+        private int SamSenBarX => PluginConfiguration.SamSenBarX;
+        private int SamSenBarY => PluginConfiguration.SamSenBarY;
+        
+        private int SamTimeJinpuXOffset => PluginConfiguration.SamTimeJinpuXOffset;
+        private int SamTimeJinpuYOffset => PluginConfiguration.SamTimeJinpuYOffset;
+        private int SamTimeShifuXOffset => PluginConfiguration.SamTimeShifuXOffset;
+        private int SamTimeShifuYOffset => PluginConfiguration.SamTimeShifuYOffset;
+        
+        private int BuffsPadding => PluginConfiguration.SAMBuffsPadding;
+        private int MeditationPadding => PluginConfiguration.SAMMeditationPadding;
+        private int SenPadding => PluginConfiguration.SAMSenPadding;
+        
         private bool BuffsEnabled => PluginConfiguration.SAMBuffsEnabled;
+        private bool GaugeEnabled => PluginConfiguration.SAMGaugeEnabled;
         private bool HiganbanaEnabled => PluginConfiguration.SAMHiganbanaEnabled;
+        private bool MeditationEnabled => PluginConfiguration.SAMMeditationEnabled;
+        private bool SenEnabled => PluginConfiguration.SAMSenEnabled;
 
-        private Dictionary<string, uint> SamHiganbanaColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000];
-        private Dictionary<string, uint> SamShifuColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 1];
-        private Dictionary<string, uint> SamJinpuColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 2];
-        private Dictionary<string, uint> SamSetsuColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 3];
-        private Dictionary<string, uint> SamGetsuColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 4];
-        private Dictionary<string, uint> SamKaColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 5];
-        private Dictionary<string, uint> SamMeditationColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 6];
-        private Dictionary<string, uint> SamKenkiColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 7];
         private Dictionary<string, uint> SamEmptyColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 8]; 
         private Dictionary<string, uint> SamExpiryColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 9];
+        private Dictionary<string, uint> SamGetsuColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 4];
+        private Dictionary<string, uint> SamHiganbanaColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000];
+        private Dictionary<string, uint> SamJinpuColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 2];
+        private Dictionary<string, uint> SamKaColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 5];
+        private Dictionary<string, uint> SamKenkiColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 7];
+        private Dictionary<string, uint> SamMeditationColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 6];
+        private Dictionary<string, uint> SamSetsuColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 3];
+        private Dictionary<string, uint> SamShifuColor => PluginConfiguration.JobColorMap[Jobs.SAM * 1000 + 1];
 
 
-
-
-        public SamuraiHudWindow(DalamudPluginInterface pluginInterface, PluginConfiguration pluginConfiguration) : base(pluginInterface, pluginConfiguration) { }
+        public SamuraiHudWindow(
+            ClientState clientState,
+            DalamudPluginInterface pluginInterface,
+            DataManager dataManager,
+            Framework framework,
+            GameGui gameGui,
+            JobGauges jobGauges,
+            ObjectTable objectTable, 
+            PluginConfiguration pluginConfiguration,
+            TargetManager targetManager
+        ) : base(
+            clientState,
+            pluginInterface,
+            dataManager,
+            framework,
+            gameGui,
+            jobGauges,
+            objectTable,
+            pluginConfiguration,
+            targetManager
+        ) { }
 
         protected override void Draw(bool _)
         {
-            if (GaugeEnabled)
+            if (GaugeEnabled) {
                 DrawKenkiBar();
-            if (SenEnabled)
+            }
+
+            if (SenEnabled) {
                 DrawSenResourceBar();
-            if (MeditationEnabled)
+            }
+
+            if (MeditationEnabled) {
                 DrawMeditationResourceBar();
-            if (HiganbanaEnabled)
+            }
+
+            if (HiganbanaEnabled) {
                 DrawHiganbanaBar();
-            if (BuffsEnabled)
+            }
+
+            if (BuffsEnabled) {
                 DrawActiveBuffs();
+            }
         }
-        protected override void DrawPrimaryResourceBar()
-        {
+        
+        protected override void DrawPrimaryResourceBar() {
         }
+        
         private void DrawKenkiBar()
         {
-            if (!GaugeEnabled)
-            {
+            if (!GaugeEnabled) {
                 return;
             }
 
-            var gauge = PluginInterface.ClientState.JobGauges.Get<SAMGauge>();
+            var gauge = JobGauges.Get<SAMGauge>();
 
 
             var xPos = CenterX - SamKenkiBarX;
@@ -111,16 +153,16 @@ namespace DelvUI.Interface
 
         private void DrawHiganbanaBar()
         {
-            var target = PluginInterface.ClientState.Targets.SoftTarget ?? PluginInterface.ClientState.Targets.CurrentTarget;
+            var actor = TargetManager.SoftTarget ?? TargetManager.Target;
 
-            if (!(target is Chara))
+            if (actor is not BattleChara target)
             {
                 return;
             }
 
-            var higanbana = target.StatusEffects.FirstOrDefault(o => o.EffectId == 1228 || o.EffectId == 1319);
+            var higanbana = target.StatusList.FirstOrDefault(o => o.StatusId == 1228 || o.StatusId == 1319);
 
-            var higanbanaDuration = higanbana.Duration;
+            var higanbanaDuration = higanbana?.RemainingTime ?? 0f;
 
             var higanbanaColor = higanbanaDuration > 5 ? SamHiganbanaColor["base"] : SamExpiryColor["base"];
 
@@ -135,37 +177,36 @@ namespace DelvUI.Interface
             drawList.AddRectFilled(cursorPos, cursorPos + barSize, SamEmptyColor["base"]);
             drawList.AddRectFilled(dotStart, cursorPos + new Vector2(barSize.X, barSize.Y), higanbanaColor);
             drawList.AddRect(cursorPos, cursorPos + barSize, 0xFF000000);
-            var textSize = ImGui.CalcTextSize(Math.Round(higanbanaDuration).ToString());
-            DrawOutlinedText(Math.Round(higanbanaDuration).ToString(), new Vector2(cursorPos.X + SamKenkiBarWidth / 2f - textSize.X / 2f, cursorPos.Y - 2));
+            var textSize = ImGui.CalcTextSize(Math.Round(higanbanaDuration).ToString(CultureInfo.InvariantCulture));
+            DrawOutlinedText(Math.Round(higanbanaDuration).ToString(CultureInfo.InvariantCulture), new Vector2(cursorPos.X + SamKenkiBarWidth / 2f - textSize.X / 2f, cursorPos.Y - 2));
 
         }
 
         private void DrawActiveBuffs()
         {
-            var target = PluginInterface.ClientState.LocalPlayer;
+            var actor = ClientState.LocalPlayer;
 
-            if (!(target is Chara))
-            {
+            if (actor is not BattleChara target) {
                 return;
             }
 
-            var BuffsBarWidth = (SamBuffsBarWidth / 2) - 1;
-            var shifu = target.StatusEffects.FirstOrDefault(o => o.EffectId == 1299);
-            var jinpu = target.StatusEffects.FirstOrDefault(o => o.EffectId == 1298);
+            var buffsBarWidth = (SamBuffsBarWidth / 2) - 1;
+            var shifu = target.StatusList.FirstOrDefault(o => o.StatusId == 1299);
+            var jinpu = target.StatusList.FirstOrDefault(o => o.StatusId == 1298);
 
-            var shifuDuration = shifu.Duration;
-            var jinpuDuration = jinpu.Duration;
+            var shifuDuration = shifu?.RemainingTime ?? 0f;
+            var jinpuDuration = jinpu?.RemainingTime ?? 0f;
 
             var xOffset = CenterX - SamBuffsBarX;
             var cursorPos = new Vector2(CenterX - SamBuffsBarX, CenterY + SamBuffsBarY);
-            var barSize = new Vector2(BuffsBarWidth, SamBuffsBarHeight);
+            var barSize = new Vector2(buffsBarWidth, SamBuffsBarHeight);
             var drawList = ImGui.GetWindowDrawList();
             var shifuXOffset = CenterX - SamTimeShifuXOffset;
             var shifuYOffset = CenterY + SamTimeShifuYOffset;
-            var shifuTextSize = ImGui.CalcTextSize(Math.Round(shifuDuration).ToString());
-            var jinpuTextSize = ImGui.CalcTextSize(Math.Round(jinpuDuration).ToString());
+            var shifuTextSize = ImGui.CalcTextSize(Math.Round(shifuDuration).ToString(CultureInfo.InvariantCulture));
+            var jinpuTextSize = ImGui.CalcTextSize(Math.Round(jinpuDuration).ToString(CultureInfo.InvariantCulture));
 
-            var buffStart = new Vector2(xOffset + BuffsBarWidth - (barSize.X / 40) * shifuDuration, CenterY + SamBuffsBarY);
+            var buffStart = new Vector2(xOffset + buffsBarWidth - (barSize.X / 40) * shifuDuration, CenterY + SamBuffsBarY);
 
             drawList.AddRectFilled(cursorPos, cursorPos + barSize, SamEmptyColor["base"]);
             drawList.AddRectFilledMultiColor(
@@ -177,7 +218,7 @@ namespace DelvUI.Interface
             {
                 drawList.AddRect(cursorPos, cursorPos + barSize, 0xFF000000);
 
-                cursorPos = new Vector2(cursorPos.X + BuffsBarWidth + BuffsPadding, cursorPos.Y);
+                cursorPos = new Vector2(cursorPos.X + buffsBarWidth + BuffsPadding, cursorPos.Y);
 
                 drawList.AddRectFilled(cursorPos, cursorPos + barSize, SamEmptyColor["base"]);
                 drawList.AddRectFilledMultiColor(
@@ -192,9 +233,9 @@ namespace DelvUI.Interface
             else
             {
                 drawList.AddRect(cursorPos, cursorPos + barSize, 0xFF000000);
-                DrawOutlinedText(Math.Round(shifuDuration).ToString(), new Vector2(cursorPos.X + BuffsBarWidth / 2f - shifuTextSize.X /2f, cursorPos.Y - 2));
+                DrawOutlinedText(Math.Round(shifuDuration).ToString(CultureInfo.InvariantCulture), new Vector2(cursorPos.X + buffsBarWidth / 2f - shifuTextSize.X /2f, cursorPos.Y - 2));
 
-                cursorPos = new Vector2(cursorPos.X + BuffsBarWidth + BuffsPadding, cursorPos.Y);
+                cursorPos = new Vector2(cursorPos.X + buffsBarWidth + BuffsPadding, cursorPos.Y);
                 var jinpuXOffset = CenterX - SamTimeJinpuXOffset;
                 var jinpuYOffset = CenterY + SamTimeJinpuYOffset;
 
@@ -207,67 +248,56 @@ namespace DelvUI.Interface
                     jinpuDuration > 0 ? SamJinpuColor["gradientLeft"] : 0x00202E3
                 );
                 drawList.AddRect(cursorPos, cursorPos + barSize, 0xFF000000);
-                DrawOutlinedText(Math.Round(jinpuDuration).ToString(), new Vector2(cursorPos.X + BuffsBarWidth / 2f - jinpuTextSize.X / 2f, cursorPos.Y - 2));
+                DrawOutlinedText(Math.Round(jinpuDuration).ToString(CultureInfo.InvariantCulture), new Vector2(cursorPos.X + buffsBarWidth / 2f - jinpuTextSize.X / 2f, cursorPos.Y - 2));
             }
         }
 
         private void DrawSenResourceBar() {
-            var gauge = PluginInterface.ClientState.JobGauges.Get<SAMGauge>();
+            var gauge = JobGauges.Get<SAMGauge>();
             
-            var SenBarWidth = (SamSenBarWidth - SenPadding * 2) / 3f;
-            var SenBarSize = new Vector2(SenBarWidth, SamSenBarHeight);
+            var senBarWidth = (SamSenBarWidth - SenPadding * 2) / 3f;
+            var senBarSize = new Vector2(senBarWidth, SamSenBarHeight);
             var xPos = CenterX - SamSenBarX;
             var yPos = CenterY + SamSenBarY;
-            var cursorPos = new Vector2(xPos - SenPadding - SenBarWidth, yPos);
+            var cursorPos = new Vector2(xPos - SenPadding - senBarWidth, yPos);
             
             var drawList = ImGui.GetWindowDrawList();
 
             // Ka Bar
-            cursorPos = new Vector2(cursorPos.X + SenPadding + SenBarWidth, cursorPos.Y);
-            if (gauge.HasKa()) drawList.AddRectFilled(cursorPos, cursorPos + SenBarSize, SamKaColor["base"]);
-            else drawList.AddRectFilled(cursorPos, cursorPos + SenBarSize, SamEmptyColor["base"]);
-            drawList.AddRect(cursorPos, cursorPos + SenBarSize, 0xFF000000);
+            cursorPos = new Vector2(cursorPos.X + SenPadding + senBarWidth, cursorPos.Y);
+            drawList.AddRectFilled(cursorPos, cursorPos + senBarSize, gauge.HasKa ? SamKaColor["base"] : SamEmptyColor["base"]);
+            drawList.AddRect(cursorPos, cursorPos + senBarSize, 0xFF000000);
 
             // Getsu Bar
-            cursorPos = new Vector2(cursorPos.X + SenPadding + SenBarWidth, cursorPos.Y);
-            if (gauge.HasGetsu())drawList.AddRectFilled(cursorPos, cursorPos + SenBarSize, SamGetsuColor["base"]);
-            else drawList.AddRectFilled(cursorPos, cursorPos + SenBarSize, SamEmptyColor["base"]);
-            drawList.AddRect(cursorPos, cursorPos + SenBarSize, 0xFF000000);
+            cursorPos = new Vector2(cursorPos.X + SenPadding + senBarWidth, cursorPos.Y);
+            drawList.AddRectFilled(cursorPos, cursorPos + senBarSize, gauge.HasGetsu ? SamGetsuColor["base"] : SamEmptyColor["base"]);
+            drawList.AddRect(cursorPos, cursorPos + senBarSize, 0xFF000000);
 
             // Setsu Bar
-            cursorPos = new Vector2(cursorPos.X + SenPadding + SenBarWidth, cursorPos.Y);
-            if (gauge.HasSetsu()) drawList.AddRectFilled(cursorPos, cursorPos + SenBarSize, SamSetsuColor["base"]);
-            else drawList.AddRectFilled(cursorPos, cursorPos + SenBarSize, SamEmptyColor["base"]);
-            drawList.AddRect(cursorPos, cursorPos + SenBarSize, 0xFF000000);
+            cursorPos = new Vector2(cursorPos.X + SenPadding + senBarWidth, cursorPos.Y);
+            drawList.AddRectFilled(cursorPos, cursorPos + senBarSize, gauge.HasSetsu ? SamSetsuColor["base"] : SamEmptyColor["base"]);
+            drawList.AddRect(cursorPos, cursorPos + senBarSize, 0xFF000000);
         }
 
 
         private void DrawMeditationResourceBar()
         {
-            var gauge = PluginInterface.ClientState.JobGauges.Get<SAMGauge>();
+            var gauge = JobGauges.Get<SAMGauge>();
 
-            var MeditationBarWidth = (SamMeditationBarWidth - MeditationPadding * 2) / 3f;
-            var MeditationBarSize = new Vector2(MeditationBarWidth, SamMeditationBarHeight);
+            var meditationBarWidth = (SamMeditationBarWidth - MeditationPadding * 2) / 3f;
+            var meditationBarSize = new Vector2(meditationBarWidth, SamMeditationBarHeight);
             var xPos = CenterX - SamMeditationBarX;
             var yPos = CenterY + SamMeditationBarY;
-            var cursorPos = new Vector2(xPos - MeditationPadding - MeditationBarWidth, yPos);
+            var cursorPos = new Vector2(xPos - MeditationPadding - meditationBarWidth, yPos);
 
             var drawList = ImGui.GetWindowDrawList();
 
             // Meditation Stacks
-            for (var i = 1; i < 4; i++)
-            {
-                cursorPos = new Vector2(cursorPos.X + MeditationPadding + MeditationBarWidth, cursorPos.Y);
+            for (var i = 1; i < 4; i++) {
+                cursorPos = new Vector2(cursorPos.X + MeditationPadding + meditationBarWidth, cursorPos.Y);
 
-                if (gauge.MeditationStacks >= i)
-                {
-                    drawList.AddRectFilled(cursorPos, cursorPos + MeditationBarSize, SamMeditationColor["base"]);
-                }
-                else
-                {
-                    drawList.AddRectFilled(cursorPos, cursorPos + MeditationBarSize, SamEmptyColor["base"]);
-                }
-                drawList.AddRect(cursorPos, cursorPos + MeditationBarSize, 0xFF000000);
+                drawList.AddRectFilled(cursorPos, cursorPos + meditationBarSize, gauge.MeditationStacks >= i ? SamMeditationColor["base"] : SamEmptyColor["base"]);
+                drawList.AddRect(cursorPos, cursorPos + meditationBarSize, 0xFF000000);
             }
         }
     }
