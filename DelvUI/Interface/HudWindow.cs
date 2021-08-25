@@ -360,6 +360,7 @@ namespace DelvUI.Interface {
                     TargetManager.SetTarget(target);
                 }
             }
+            
             ImGui.EndChild();
             ImGui.End();
 
